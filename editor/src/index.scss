@@ -6,3 +6,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+// 将滚动条宽度改为2px
+// 全局滚动条样式
+::-webkit-scrollbar-thumb {
+    background-color: rgba($color: #b5b2b2, $alpha: .5);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+ 
+.chat-item
+{
+    @apply  m-2 p-2 border rounded mb-2 border-slate-500 break-words break-all;
+    &.user
+    {
+        @apply bg-slate-700;
+    }
+    .code-box
+    {
+        max-width: 340px;
+        overflow-x: auto;
+        word-break: break-all;
+    }
+}
+
