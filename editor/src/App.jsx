@@ -35,6 +35,8 @@ const App = () => {
     defaultValue: [],
   });
 
+  const [streamText, setStreamText] = useState('');
+
   const [currentPlugin, setCurrentPlugin] = useState('-new-');
   const [currentPluginSlug, setCurrentPluginSlug] = useLocalStorageState('currentPluginSlug', {
     defaultValue: '',
@@ -53,6 +55,17 @@ const App = () => {
         username: 'admin',
         password: 'password',
       },
+      // 加载插件导出插件
+      {
+        step: 'installPlugin',
+        pluginZipFile: {
+          resource: 'url',
+          url: window.origin +'/wp-plugin-exporter.zip'
+        },
+        "options": {
+          "activate": true
+        }
+      }
     ],
 
   };
@@ -79,13 +92,13 @@ const App = () => {
   }else
   {
     // 测试时载入
-    blueprint.steps.push({
-      step: 'installPlugin',
-      pluginZipFile: {
-        resource: 'url',
-        url: window.origin +'/kodo-qiniu.zip'
-      },
-    });
+    // blueprint.steps.push({
+    //   step: 'installPlugin',
+    //   pluginZipFile: {
+    //     resource: 'url',
+    //     url: window.origin +'/kodo-qiniu.zip'
+    //   },
+    // });
   }
 
   useEffect(() => {
@@ -135,6 +148,7 @@ const App = () => {
     {
       // load plugins from response.json
       setPlugins(response.json);
+      return response.json;
     }
       
   }
@@ -171,11 +185,13 @@ const App = () => {
 
   async function writeFile(path, content) {
 
+    console.log( "writeFile path 1", path  );
+
     const pathInfo = path.split('/');
     // 兼容只有一个文件的插件
     if( pathInfo[0] == pathInfo[1] && String(pathInfo[0]).endsWith('.php') ) path = pathInfo[0];
 
-    console.log( "writeFile", path  );
+    console.log( "writeFile path 2", path  );
     // return false;
     if (!playground) {
       toast.error('Playground not ready');
@@ -184,15 +200,19 @@ const App = () => {
     const filePath = `/wordpress/wp-content/plugins/${path}`;
     const fileDir = filePath.split('/').slice(0, -1).join('/');
 
+    console.log("fileDir", fileDir, "filePath", filePath);
+
     await playground.mkdir(fileDir, { recursive: true });
     await playground.writeFile(filePath, content);
 
+    const instantPlugins = await loadPlugins();
+
     // 从 plugins 中获取 plugin 的完整路径
     const pluginPath = path.split('/')[0];
-    const pluginFullPath = plugins.find(item => item.includes(pluginPath));
+    const pluginFullPath = instantPlugins.find(item => item.includes(pluginPath));
     if( !pluginFullPath )
     {
-      console.log( "error", pluginPath, plugins, pluginFullPath )
+      console.log( "error", pluginPath, instantPlugins, pluginFullPath )
       return false;
     }
     
@@ -275,23 +295,30 @@ const App = () => {
       role: 'user',
       content: prompt
     });
-    oldChatList.push({
-      role: 'assistant',
-      content: ''
-    });
+    
     for await (const chunk of stream) {
       if (chunk?.choices[0] && chunk?.choices[0].delta?.content) {
         content += chunk.choices[0].delta.content;
+        setStreamText(content);
+        // .chat-list-area 滚动到 bottom
+        const chatListArea = document.querySelector('.chat-list-area');
+        chatListArea.scrollTop = chatListArea.scrollHeight;
+        // 
         // 将 chatList 最后一个 item 的 content进行累加
-        const lastItem = oldChatList[oldChatList.length - 1];
-        if (lastItem) {
-          lastItem.content = content;
-          setChatList(oldChatList);
-        }
+        // const lastItem = oldChatList[oldChatList.length - 1];
+        // if (lastItem) {
+        //   lastItem.content = content;
+        //   setChatList(oldChatList);
+        // }
       }
 
     }
     setPrompt('');
+    setStreamText('');
+    setChatList([...oldChatList, {
+      role: 'assistant',
+      content: content
+    }]);
   }
 
   return (
@@ -322,7 +349,9 @@ const App = () => {
               </HTMLSelect>
               {currentPlugin === '-new-' ?
                 <InputGroup id="plugin-slug" className="w-[180px]" value={currentPluginSlug} onChange={e => setCurrentPluginSlug(e.target.value)} placeholder="Plugin Slug" />
-                : null}
+                : <Button className="ml-1" onClick={async ()=>{
+                  await playground.goTo(`/wp-admin/plugin-editor.php?plugin=${encodeURIComponent(currentPlugin)}&Submit=Select`);
+                }}>Go</Button>}
             </ControlGroup>
           </div>
           <div className="chat-col p-2  flex-1 flex flex-col justify-between h-[calc(100vh-300px)]">
@@ -338,6 +367,10 @@ const App = () => {
                   )
                 }
               )}
+              {streamText && streamText.length > 0 ? <div className="chat-item flex flex-row items-center empty:hidden">
+                {streamText}
+              </div> : null}
+              
             </div>
             <div className="chat-form max-h-[300px] ">
               <TextArea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder='' fill={true} autoResize={true} className="max-h-[200px]" />

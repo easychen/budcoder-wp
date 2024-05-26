@@ -16,7 +16,7 @@ export const createPrompt = `
 <插件Slug>{{slug}}</插件Slug>
 
 # OUTPUT FORMAT
-采用以下格式输出代码，输出的代码不需要使用Markdown包裹
+采用以下格式输出代码，输出的代码和code标签均不需要使用Markdown语法包裹
 
 <code language="php" path="{{slug}}/{{slug}}.php">
 <?php
@@ -56,9 +56,9 @@ export const modifyPrompt = `# ROLE
 <待修改文件内容>{{code}}</待修改文件内容>
 
 # OUTPUT FORMAT
-采用以下格式输出代码，输出的代码不需要使用Markdown包裹
+采用以下格式输出代码，输出的代码和code标签均不需要使用Markdown语法包裹
 
-<code language="php" path="{{slug}}/{{file}}">
+<code language="php" path="{{file}}">
 <?php
 ...这里是插件的完整PHP代码
 </code>
