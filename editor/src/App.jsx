@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 // import MonacoEditor from '@monaco-editor/react';
 import { startPlaygroundWeb } from '@wp-playground/client';
 import { Button, InputGroup, ButtonGroup, TextArea, Dialog, DialogBody, DialogFooter, AnchorButton, ControlGroup, HTMLSelect } from '@blueprintjs/core';
@@ -40,8 +40,8 @@ const App = () => {
     defaultValue: '',
   });
   const [plugins, setPlugins] = useState([]);
-
   const [loading, setLoading] = useState(false);
+  
   const blueprint = {
     landingPage: '/wp-admin',
     features: {
@@ -76,6 +76,16 @@ const App = () => {
       });
     }
 
+  }else
+  {
+    // 测试时载入
+    blueprint.steps.push({
+      step: 'installPlugin',
+      pluginZipFile: {
+        resource: 'url',
+        url: window.origin +'/kodo-qiniu.zip'
+      },
+    });
   }
 
   useEffect(() => {
@@ -93,7 +103,7 @@ const App = () => {
         if (params.get('plugin')) {
           const decodedName = params.get('plugin');
           if (decodedName)
-            setCurrentPlugin(decodedName.split('/')[0]);
+            setCurrentPlugin(decodedName);
         }
         setUrl(path);
         setLoading(false);
@@ -101,10 +111,9 @@ const App = () => {
       client.goTo(url);
       playground = client;
       loadPlugins();
-      checkSettings();
     };
-
-    loadPlayground();
+    loadPlayground()
+    checkSettings();
   }, []);
 
   function checkSettings() {
@@ -115,13 +124,19 @@ const App = () => {
   }
 
   async function loadPlugins() {
-    const ret = await playground.listFiles('/wordpress/wp-content/plugins/');
-    if (Array.isArray(ret)) {
-      const ret_filter = ret.filter(item => String(item).includes('.php') ? null : item).filter(item => item);
-      if (ret_filter.length > 0)
-        setPlugins(ret_filter);
+    const response = await playground.run({
+      code: `<?php 
+      require("/wordpress/wp-load.php"); 
+      require_once('/wordpress/wp-admin/includes/plugin.php');
+      echo json_encode(array_keys(get_plugins()));
+      `
+    });
+    if( Array.isArray(response.json) && response.json.length > 0 )
+    {
+      // load plugins from response.json
+      setPlugins(response.json);
     }
-
+      
   }
 
   async function test() {
@@ -156,19 +171,32 @@ const App = () => {
 
   async function writeFile(path, content) {
 
+    const pathInfo = path.split('/');
+    // 兼容只有一个文件的插件
+    if( pathInfo[0] == pathInfo[1] && String(pathInfo[0]).endsWith('.php') ) path = pathInfo[0];
+
+    console.log( "writeFile", path  );
+    // return false;
     if (!playground) {
       toast.error('Playground not ready');
       return false;
     }
-    // 保证 currentPluginSlug 目录存在
-    const fileDir = '/wordpress/wp-content/plugins/' + currentPluginSlug;
-    const ret1 = await playground.mkdir(fileDir, { recursive: true });
-    const filePath = fileDir + '/' + path;
-    const ret = await playground.writeFile(filePath, content);
+    const filePath = `/wordpress/wp-content/plugins/${path}`;
+    const fileDir = filePath.split('/').slice(0, -1).join('/');
 
-    const plugin_full_name = currentPluginSlug + '/' + currentPluginSlug + '.php';
+    await playground.mkdir(fileDir, { recursive: true });
+    await playground.writeFile(filePath, content);
 
-    const newUrl = `/wp-admin/plugin-editor.php?plugin=${encodeURIComponent(plugin_full_name)}&file=${encodeURIComponent(currentPluginSlug + '/' + path)}&Submit=Select`;
+    // 从 plugins 中获取 plugin 的完整路径
+    const pluginPath = path.split('/')[0];
+    const pluginFullPath = plugins.find(item => item.includes(pluginPath));
+    if( !pluginFullPath )
+    {
+      console.log( "error", pluginPath, plugins, pluginFullPath )
+      return false;
+    }
+    
+    const newUrl = `/wp-admin/plugin-editor.php?plugin=${encodeURIComponent(pluginFullPath)}&file=${encodeURIComponent(path)}&Submit=Select`;
 
     // /wp-admin/plugin-editor.php?file=wp-article-counter%2Fwp-article-counter.php&plugin=wp-article-counter%2Fwp-article-counter.php
 
@@ -194,6 +222,7 @@ const App = () => {
 
       promptToSend = createPrompt.replaceAll('{{description}}', prompt).replaceAll('{{slug}}', currentPluginSlug).replaceAll('{{lang}}', lang);
     } else {
+      // 修改模式
       // 需要补充
       // slug / file / code 
       // 通过 playground 获取
@@ -210,14 +239,13 @@ const App = () => {
       // splite / 以后，第一个元素为 插件 slug
       const plugin_slug = plugin_name.split('/')[0];
       // 剩下的元素（第二个到最后的元素）重新拼接为插件内路径
-      const pure_file_name = plugin_name.split('/').slice(1).join('/');
       const file_content = await playground.readFileAsText('/wordpress/wp-content/plugins/' + file_name);
       if (!file_content) {
         toast.error('Get file content failed');
         return false;
       }
 
-      promptToSend = modifyPrompt.replaceAll('{{description}}', prompt).replaceAll('{{slug}}', plugin_slug).replaceAll('{{file}}', pure_file_name).replaceAll('{{code}}', file_content).replaceAll('{{lang}}', lang);
+      promptToSend = modifyPrompt.replaceAll('{{description}}', prompt).replaceAll('{{slug}}', plugin_slug).replaceAll('{{file}}', file_name).replaceAll('{{code}}', file_content).replaceAll('{{lang}}', lang);
     }
 
     if (promptToSend === '') {
@@ -280,7 +308,7 @@ const App = () => {
                   // /wp-admin/plugin-editor.php?plugin=absolute-reviews-s1KZjfh8-1716526237%2Fabsolute-reviews-s1KZjfh8-1716526237.php&Submit=Select
 
 
-                  await playground.goTo(`/wp-admin/plugin-editor.php?plugin=${encodeURIComponent(e.target.value + '/' + e.target.value + '.php')}&Submit=Select`);
+                  await playground.goTo(`/wp-admin/plugin-editor.php?plugin=${encodeURIComponent(e.target.value)}&Submit=Select`);
                 }
               }} value={currentPlugin}>
                 <option value="-new-">Create new Plugin</option>

@@ -9,7 +9,7 @@ import { toast } from 'react-hot-toast';
 import React, { memo } from 'react';
 
 //@ts-ignore
-function MarkdownDiv({ children, onWrite }) {
+export default function MarkdownDiv({ children, onWrite }) {
     //@ts-ignore
     function CustomLink({ href, ...props }) {
         // Check if the href starts with 'http'
@@ -65,6 +65,4 @@ function MarkdownDiv({ children, onWrite }) {
         }
     />;
 }
-
-export default memo(MarkdownDiv, (prevProps, nextProps) => JSON.stringify(prevProps.children) === JSON.stringify(nextProps.children));
 
