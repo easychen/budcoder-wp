@@ -60,7 +60,7 @@ const App = () => {
         step: 'installPlugin',
         pluginZipFile: {
           resource: 'url',
-          url: window.origin +'/wp-plugin-exporter.zip'
+          url: `${window.origin}/wp-json/pebc/v1/get-file/preset/wp-plugin-exporter.zip`
         },
         "options": {
           "activate": true
@@ -368,7 +368,7 @@ const App = () => {
                 }
               )}
               {streamText && streamText.length > 0 ? <div className="chat-item flex flex-row items-center empty:hidden">
-                {streamText}
+              <MarkdownDiv>{streamText}</MarkdownDiv>
               </div> : null}
               
             </div>
