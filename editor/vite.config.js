@@ -10,6 +10,11 @@ export default defineConfig({
     react(),
     // monacoEditorPlugin()
   ],
+  base: './',
+  build: {
+    outDir: 'dist',
+    assetsDir: './',
+  },
   server: {
     https: {
       key: fs.readFileSync(path.resolve(__dirname, 'localhost+1-key.pem')),
@@ -20,6 +25,6 @@ export default defineConfig({
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  // 允许的方法
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],  // 允许的请求头
       credentials: true  // 允许发送 Cookie
-    }
+    },
   }
 })

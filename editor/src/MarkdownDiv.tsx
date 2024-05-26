@@ -46,7 +46,7 @@ function MarkdownDiv({ children, onWrite }) {
                         node?.data?.meta ? 
                         <Button className="ml-2" icon="input" onClick={()=>{
                             // @ts-ignore
-                            if( onWrite ) onWrite(node.data.meta);
+                            if( onWrite ) onWrite(node.data.meta, String(children).replace(/\n$/, '').replace(/^\n/, ''));
                         }}>Write</Button> 
                         : null }
                     </div>
