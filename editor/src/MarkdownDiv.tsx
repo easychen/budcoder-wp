@@ -41,14 +41,10 @@ export default function MarkdownDiv({ children, onWrite }) {
                     />
                     <CopyToClipboard text={String(children)} onCopy={()=>toast.success('Copied')}><Button icon="code">Copy</Button></CopyToClipboard>
                     
-                    { 
+                    <Button className="ml-2" icon="input" onClick={()=>{
                         // @ts-ignore
-                        node?.data?.meta ? 
-                        <Button className="ml-2" icon="input" onClick={()=>{
-                            // @ts-ignore
-                            if( onWrite ) onWrite(node.data.meta, String(children).replace(/\n$/, '').replace(/^\n/, ''));
-                        }}>Write</Button> 
-                        : null }
+                        if( onWrite ) onWrite(node?.data?.meta||"", String(children).replace(/\n$/, '').replace(/^\n/, ''));
+                    }}>Write</Button> 
                     </div>
                 ) : (
                     <code className={className} {...props}>

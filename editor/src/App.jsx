@@ -27,6 +27,9 @@ const App = () => {
     defaultValue: createPrompt,
   });
 
+  const [showPathInput, setShowPathInput] = useState(false);
+  const [pathInfo, setPathInfo] = useState(false);
+
   const [pluginModifyPrompt, setPluginModifyPrompt] = useLocalStorageState('pluginModifyPrompt', {
     defaultValue: modifyPrompt,
   });
@@ -201,7 +204,33 @@ const App = () => {
 
   async function writeFile(path, content) {
 
-    console.log( "writeFile path 1", path  );
+    if( !path || path.length < 1 )
+    {
+      if( currentPlugin == '-new-' )
+      {
+        setPathInfo({
+          path:`${currentPluginSlug}/${currentPluginSlug}.php`,
+          content
+        });
+      }else
+      {
+        let thePath =  `${currentPlugin}`;
+        // 如果右侧打开了文件编辑器，那么写入到打开的文件
+        const url = await playground.getCurrentURL();
+        if( url && String(url).startsWith('/wp-admin/plugin-editor.php') )
+        {
+          const params = new URLSearchParams(url.split('?')[1]);
+          if( params.get('file') ) thePath = file;
+        }
+
+        setPathInfo({
+          path:thePath,
+          content
+        });
+      }
+      setShowPathInput(true);
+      return false;
+    }
 
     const pathInfo = path.split('/');
     // 兼容只有一个文件的插件
@@ -457,6 +486,17 @@ const App = () => {
             </DialogBody>
             <DialogFooter>
               <Button onClick={() => setShowSettingsBox(false)}>Close</Button>
+            </DialogFooter>
+          </Dialog>
+          <Dialog isOpen={showPathInput} onClose={() => setShowPathInput(false)} title="File Path">
+            <DialogBody>
+              <InputGroup placeholder='Please enter the path' className="mb-1" value={pathInfo.path||""} onChange={(e) => setPathInfo({...pathInfo,path:e.target.value})} />
+            </DialogBody>
+            <DialogFooter>
+              <Button onClick={() => {
+                setShowPathInput(false);
+                writeFile(pathInfo.path, pathInfo.content);
+              }}>Write</Button>
             </DialogFooter>
           </Dialog>
           <Toaster />
