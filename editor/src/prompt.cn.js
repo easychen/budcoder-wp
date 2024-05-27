@@ -9,7 +9,7 @@ export const createPrompt = `
 
 # RULES
 1. 如果用户没有指定插件名称，则使用 wp_budcode_plugin 
-1. 插件的开发者信息使用 budcoder、budcoder@ft07.com、ft07.com/budcoder 
+1. 插件的开发者信息使用 BudCoder、budcoder@ft07.com、ft07.com/bud-coder 
 
 # INPUT
 <用户描述>{{description}}</用户描述>
