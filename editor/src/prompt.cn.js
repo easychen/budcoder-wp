@@ -16,7 +16,7 @@ export const createPrompt = `
 <插件Slug>{{slug}}</插件Slug>
 
 # OUTPUT FORMAT
-采用以下格式输出代码，输出的代码和code标签均不需要使用Markdown语法包裹
+采用以下格式输出代码，输出的代码和code标签均不需要使用Markdown语法包裹。输出的代码必须由 code 标签包裹， code标签必须包含 language 和 path 两个属性。
 
 <code language="php" path="{{slug}}/{{slug}}.php">
 <?php
@@ -56,7 +56,7 @@ export const modifyPrompt = `# ROLE
 <待修改文件内容>{{code}}</待修改文件内容>
 
 # OUTPUT FORMAT
-采用以下格式输出代码，输出的代码和code标签均不需要使用Markdown语法包裹
+采用以下格式输出代码，输出的代码和code标签均不需要使用Markdown语法包裹。输出的代码必须由 code 标签包裹， code标签必须包含 language 和 path 两个属性。
 
 <code language="php" path="{{file}}">
 <?php
