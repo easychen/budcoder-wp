@@ -16,7 +16,7 @@ You are a world-class WordPress engineer developing a WordPress plugin. Answer q
 <Plugin Slug>{{slug}}</Plugin Slug>
 
 # OUTPUT FORMAT
-Output the code in the following format WITHOUT wrapping the output code and code tags in Markdown syntax.
+Output the code in the following format WITHOUT wrapping the output code and code tags in Markdown syntax: The output code must be enclosed by the code tag, and the code tag must include language and path attributes.
 
 <code language="php" path="{{slug}}/{{slug}}.php">
 <?php
@@ -57,7 +57,7 @@ You are a world-class WordPress engineer developing a WordPress plugin. Answer q
 <Content of the File to be Modified>{{code}}</Content of the File to be Modified>
 
 # OUTPUT FORMAT
-Output the code in the following format WITHOUT wrapping the output code and code tags in Markdown syntax.
+Output the code in the following format WITHOUT wrapping the output code and code tags in Markdown syntax: The output code must be enclosed by the code tag, and the code tag must include language and path attributes.
 
 <code language="php" path="{{file}}">
 <?php
