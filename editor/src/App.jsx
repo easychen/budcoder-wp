@@ -23,6 +23,14 @@ const App = () => {
   const [url, setUrl] = useState(defaultUrl);
   const [prompt, setPrompt] = useState(params.get('prompt') || 'Please add a field in the backend article list to display the number of times each article has been read.');
 
+  const [pluginCreatePrompt, setPluginCreatePrompt] = useLocalStorageState('pluginCreatePrompt', {
+    defaultValue: createPrompt,
+  });
+
+  const [pluginModifyPrompt, setPluginModifyPrompt] = useLocalStorageState('pluginCreatePrompt', {
+    defaultValue: modifyPrompt,
+  });
+
   const [showSettingsBox, setShowSettingsBox] = useState(false);
   const [settings, setSettings] = useLocalStorageState('settings', {
     defaultValue: {
@@ -33,6 +41,10 @@ const App = () => {
   });
   const [chatList, setChatList] = useLocalStorageState('chatList', {
     defaultValue: [],
+  });
+
+  const [showAdvancedSettings, setShowAdvancedSettings] = useLocalStorageState('showAdvancedSettings', {
+    defaultValue: false,
   });
 
   const [streamText, setStreamText] = useState('');
@@ -55,20 +67,24 @@ const App = () => {
         username: 'admin',
         password: 'password',
       },
-      // 加载插件导出插件
-      {
-        step: 'installPlugin',
-        pluginZipFile: {
-          resource: 'url',
-          url: `${window.origin}/wp-json/pebc/v1/get-file/preset/wp-plugin-exporter.zip`
-        },
-        "options": {
-          "activate": true
-        }
-      }
     ],
-
   };
+
+  // localhost是本地测试环境，不加载 wp-plugin-exporter(因为路径不对)
+  if( window.location.hostname != 'localhost' )
+  {
+    blueprint.steps.push(//
+    {
+      step: 'installPlugin',
+      pluginZipFile: {
+        resource: 'url',
+        url: `${window.origin}/wp-json/pebc/v1/get-file/preset/wp-plugin-exporter.zip`
+      },
+      "options": {
+        "activate": true
+      }
+    });
+  }
 
   if (params.get('path')) {
     // 从 path 中提取 rand 和 plugin
@@ -131,7 +147,7 @@ const App = () => {
 
   function checkSettings() {
     if (!settings.ai_key) {
-      toast("Set AI key first");
+      toast("Please set the AI key first.");
       setShowSettingsBox(true);
     }
   }
@@ -235,12 +251,12 @@ const App = () => {
       // 先检查 slug
       // 正则，以字母开头，后续由字母数字下划线和减号组成
       if (! /^[a-zA-Z][a-zA-Z0-9_-]+$/.test(currentPluginSlug)) {
-        toast.error('Invalid plugin slug');
+        toast.error('Invalid plugin slug.');
         document.getElementById('plugin-slug').focus();
         return false;
       }
 
-      promptToSend = createPrompt.replaceAll('{{description}}', prompt).replaceAll('{{slug}}', currentPluginSlug).replaceAll('{{lang}}', lang);
+      promptToSend = pluginCreatePrompt.replace(/{{description}}/g, prompt).replace(/{{slug}}/g, currentPluginSlug).replace(/{{lang}}/g, lang);
     } else {
       // 修改模式
       // 需要补充
@@ -251,7 +267,7 @@ const App = () => {
       const plugin_name = params.get('plugin');
       const file_name = params.get('file') || plugin_name;
       if (!plugin_name || !file_name) {
-        toast("please select a file in Plugin editor first");
+        toast("Please select a file in the Plugin editor first.");
         return false;
       }
       console.log("currentPath", currentPath, file_name);
@@ -261,15 +277,15 @@ const App = () => {
       // 剩下的元素（第二个到最后的元素）重新拼接为插件内路径
       const file_content = await playground.readFileAsText('/wordpress/wp-content/plugins/' + file_name);
       if (!file_content) {
-        toast.error('Get file content failed');
+        toast.error('Failed to get file content.');
         return false;
       }
 
-      promptToSend = modifyPrompt.replaceAll('{{description}}', prompt).replaceAll('{{slug}}', plugin_slug).replaceAll('{{file}}', file_name).replaceAll('{{code}}', file_content).replaceAll('{{lang}}', lang);
+      promptToSend = pluginModifyPrompt.replace(/{{description}}/g, prompt).replace(/{{slug}}/g, plugin_slug).replace(/{{file}}/g, file_name).replace(/{{code}}/g, file_content).replace(/{{lang}}/g, lang);
     }
 
     if (promptToSend === '') {
-      toast.error('Prompt is empty');
+      toast.error('The prompt is empty.');
       return false;
     }
 
@@ -330,13 +346,13 @@ const App = () => {
               {/* <Button onClick={()=>test()}>test</Button> */}
               <HTMLSelect className="w-[200px]" onChange={async e => {
                 setCurrentPlugin(e.target.value)
-                if (e.target.value !== '-new-') {
+                // if (e.target.value !== '-new-') {
 
-                  // /wp-admin/plugin-editor.php?plugin=absolute-reviews-s1KZjfh8-1716526237%2Fabsolute-reviews-s1KZjfh8-1716526237.php&Submit=Select
+                //   // /wp-admin/plugin-editor.php?plugin=absolute-reviews-s1KZjfh8-1716526237%2Fabsolute-reviews-s1KZjfh8-1716526237.php&Submit=Select
 
 
-                  await playground.goTo(`/wp-admin/plugin-editor.php?plugin=${encodeURIComponent(e.target.value)}&Submit=Select`);
-                }
+                //   await playground.goTo(`/wp-admin/plugin-editor.php?plugin=${encodeURIComponent(e.target.value)}&Submit=Select`);
+                // }
               }} value={currentPlugin}>
                 <option value="-new-">Create new Plugin</option>
                 {plugins && plugins.length > 0 && plugins.map(
@@ -360,7 +376,7 @@ const App = () => {
                 (item, index) => {
                   return (
                     <div key={index} className={`chat-item flex flex-row items-center ` + item.role || ""}>
-                      <MarkdownDiv onWrite={(path, content) => writeFile(path, content)}>{item.content?.replace(/<code\s+language="([^"]+)"\s+path="([^"]+)">([\s\S]*?)<\/code>/, (match, language, path, code) => {
+                      <MarkdownDiv onWrite={(path, content) => writeFile(path, content)}>{item.content?.replace(/<code\s+language="([^"]+)"\s+path="([^"]+)">([\s\S]*?)<\/code>/g, (match, language, path, code) => {
                         return `\`\`\`${language} ${path}\n${code}\n\`\`\``;
                       }) || ""}</MarkdownDiv>
                     </div>
@@ -378,7 +394,7 @@ const App = () => {
                 <div className="left flex flex-row items-center">
                   <Button onClick={() => gen()}>{currentPlugin === '-new-' ? 'Create' : 'Modify'}</Button>
                   <Button className="ml-1" onClick={() => {
-                    if (window.confirm('Are you sure to clear all chat?')) {
+                    if (window.confirm('Are you sure you want to clear all chat?')) {
                       setChatList([]);
                     }
                   }} icon="clean">Clean Chat</Button>
@@ -386,7 +402,7 @@ const App = () => {
                 </div>
                 <div className="right">
                   <ButtonGroup>
-                    <Button icon="key" minimal={true} onClick={() => setShowSettingsBox(true)} />
+                    <Button icon="settings" minimal={true} onClick={() => setShowSettingsBox(true)} />
                   </ButtonGroup>
                 </div>
 
@@ -424,9 +440,20 @@ const App = () => {
 
           <Dialog isOpen={showSettingsBox} onClose={() => setShowSettingsBox(false)} title="Settings">
             <DialogBody>
-              <InputGroup placeholder='please enter openai api key' className="mb-1" value={settings.ai_key || ""} onChange={(e) => setSettings({ ...settings, ai_key: e.target.value })} leftElement={<Button minimal={true} disabled={true} >OpenAI Key</Button>} rightElement={<AnchorButton href="https://platform.openai.com/playground" target="_blank" icon="document-open" ></AnchorButton>} />
-              <InputGroup placeholder='api base' className="mb-1" value={settings.ai_apibase || ""} onChange={(e) => setSettings({ ...settings, ai_apibase: e.target.value })} leftElement={<Button minimal={true} disabled={true}>API Endpoint</Button>} />
-              <InputGroup placeholder='model' className="mb-1" value={settings.ai_model || ""} onChange={(e) => setSettings({ ...settings, ai_model: e.target.value })} leftElement={<Button minimal={true} disabled={true}>Model</Button>} />
+            <div className="mb-2 bg-slate-200 p-3 rounded">
+              <InputGroup type="password" placeholder='Please enter the OpenAI API key' className="mb-1" value={settings.ai_key || ""} onChange={(e) => setSettings({ ...settings, ai_key: e.target.value })} leftElement={<Button minimal={true} disabled={true} >OpenAI Key</Button>} rightElement={<AnchorButton href="https://platform.openai.com/playground" target="_blank" icon="document-open" ></AnchorButton>} />
+              <InputGroup placeholder='API base' className="mb-1" value={settings.ai_apibase || ""} onChange={(e) => setSettings({ ...settings, ai_apibase: e.target.value })} leftElement={<Button minimal={true} disabled={true}>API Endpoint</Button>} />
+              <InputGroup placeholder='Chat Model' className="mb-1" value={settings.ai_model || ""} onChange={(e) => setSettings({ ...settings, ai_model: e.target.value })} leftElement={<Button minimal={true} disabled={true}>Model</Button>} />
+              </div>
+              <Button icon={showAdvancedSettings?'chevron-up':'chevron-down'} onClick={()=>setShowAdvancedSettings(!showAdvancedSettings)}>Prompts</Button>
+              { showAdvancedSettings ? <div className="mt-2 bg-slate-200 p-3 rounded">
+                <div className="text-md my-1">Create Plugin Prompt</div>
+                <TextArea fill={true} className="max-h-[20vh]" autoResize={true} value={pluginCreatePrompt} onChange={e=>setPluginCreatePrompt(e.target.value)} />
+                <div className="text-md my-1">Modify Plugin Prompt</div>
+                <TextArea fill={true} className="max-h-[20vh]" autoResize={true} value={pluginModifyPrompt} onChange={e=>setPluginModifyPrompt(e.target.value)} />
+                
+              </div> : null }
+              
             </DialogBody>
             <DialogFooter>
               <Button onClick={() => setShowSettingsBox(false)}>Close</Button>
