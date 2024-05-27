@@ -27,7 +27,7 @@ const App = () => {
     defaultValue: createPrompt,
   });
 
-  const [pluginModifyPrompt, setPluginModifyPrompt] = useLocalStorageState('pluginCreatePrompt', {
+  const [pluginModifyPrompt, setPluginModifyPrompt] = useLocalStorageState('pluginModifyPrompt', {
     defaultValue: modifyPrompt,
   });
 
