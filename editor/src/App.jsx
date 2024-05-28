@@ -74,7 +74,8 @@ const App = () => {
   };
 
   // localhost是本地测试环境，不加载 wp-plugin-exporter(因为路径不对)
-  if( window.location.hostname != 'localhost' )
+  // 改为必须传入 export 参数才自动安装
+  if( window.location.hostname != 'localhost' && params.get('export') == 1 )
   {
     blueprint.steps.push(//
     {
