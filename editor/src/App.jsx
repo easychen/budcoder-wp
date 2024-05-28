@@ -226,7 +226,7 @@ const App = () => {
         if( url && String(url).startsWith('/wp-admin/plugin-editor.php') )
         {
           const params = new URLSearchParams(url.split('?')[1]);
-          if( params.get('file') ) thePath = file;
+          if( params.get('file') ) thePath = params.get('file');
         }
 
         setPathInfo({
