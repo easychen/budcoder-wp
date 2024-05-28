@@ -16,6 +16,6 @@ class RoboFile extends \Robo\Tasks
         $this->_exec('rm -rf '. $dist_dir . '/dist');
         $this->_exec('cp -r editor/dist '. $dist_dir);
         // 删除 $dist_dir/dist/absolute-reviews.zip
-        $this->_exec('rm -rf '. $dist_dir . '/dist/absolute-reviews.zip');
+        $this->_exec('rm -rf '. $dist_dir . '/dist/*.zip');
     }
 }

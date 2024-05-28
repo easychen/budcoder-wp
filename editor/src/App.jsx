@@ -114,13 +114,13 @@ const App = () => {
   }else
   {
     // 测试时载入
-    afterSteps.push({
-      step: 'installPlugin',
-      pluginZipFile: {
-        resource: 'url',
-        url: window.origin +'/kodo-qiniu.zip'
-      },
-    });
+    // afterSteps.push({
+    //   step: 'installPlugin',
+    //   pluginZipFile: {
+    //     resource: 'url',
+    //     url: window.origin +'/kodo-qiniu.zip'
+    //   },
+    // });
   }
 
   blueprint.steps = blueprint.steps.concat(afterSteps);
