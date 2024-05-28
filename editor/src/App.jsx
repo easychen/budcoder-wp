@@ -73,11 +73,13 @@ const App = () => {
     ],
   };
 
+  const afterSteps = [];
+
   // localhost是本地测试环境，不加载 wp-plugin-exporter(因为路径不对)
   // 改为必须传入 export 参数才自动安装
   if( window.location.hostname != 'localhost' && params.get('export') == 1 )
   {
-    blueprint.steps.push(//
+    afterSteps.push(//
     {
       step: 'installPlugin',
       pluginZipFile: {
@@ -98,7 +100,7 @@ const App = () => {
       const rand = match[1];
       const plugin_name = match[2];
 
-      blueprint.steps.push({
+      afterSteps.push({
         step: 'installPlugin',
         pluginZipFile: {
           resource: 'url',
@@ -112,14 +114,16 @@ const App = () => {
   }else
   {
     // 测试时载入
-    // blueprint.steps.push({
-    //   step: 'installPlugin',
-    //   pluginZipFile: {
-    //     resource: 'url',
-    //     url: window.origin +'/kodo-qiniu.zip'
-    //   },
-    // });
+    afterSteps.push({
+      step: 'installPlugin',
+      pluginZipFile: {
+        resource: 'url',
+        url: window.origin +'/kodo-qiniu.zip'
+      },
+    });
   }
+
+  blueprint.steps = blueprint.steps.concat(afterSteps);
 
   useEffect(() => {
     const loadPlayground = async () => {
@@ -143,6 +147,7 @@ const App = () => {
       });
       client.goTo(url);
       playground = client;
+      // await playground.runBlueprintSteps(await playground.compileBlueprint({steps:afterSteps}));
       loadPlugins();
     };
     loadPlayground()
