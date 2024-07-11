@@ -8,9 +8,60 @@ import { createPrompt, modifyPrompt } from './prompt';
 import OpenAI from 'openai';
 import MarkdownDiv from './MarkdownDiv';
 import toast, { Toaster } from 'react-hot-toast';
+import { useFilePicker } from 'use-file-picker';
 let playground = null;
 
 const App = () => {
+  const { openFilePicker } = useFilePicker({
+    accept: 'composer.phar',
+    onFilesSuccessfullySelected: async ({plainFiles, filesContent}) =>
+    {
+      const thefile = plainFiles[0];
+      const response1 = await playground.writeFile('/wordpress/composer.phar', new Uint8Array(await thefile.arrayBuffer()))
+      
+      await playground?.writeFile('/tmp/stdout', '');
+			await playground?.writeFile('/tmp/stderror', '');
+			await playground?.writeFile(
+			'/wordpress/run-composer.php',
+			`<?php
+			// Set up the environment to emulate a shell script
+			// call.
+
+			// Set SHELL_PIPE to 0 to ensure WP-CLI formats
+			// the output as ASCII tables.
+			// @see https://github.com/wp-cli/wp-cli/issues/1102
+			putenv( 'SHELL_PIPE=0' );
+
+			// Set the argv global.
+      $_SERVER['argv'] = array_merge([
+        "/wordpress/composer.phar",
+        "diagnose"
+			]);
+
+			// Provide stdin, stdout, stderr streams outside of
+			// the CLI SAPI.
+      define('STDIN', fopen('php://stdin', 'rb'));
+      define('STDOUT', fopen('php://stdout', 'wb'));
+      define('STDERR', fopen('/tmp/stderr', 'wb'));
+
+      require( "/wordpress/composer.phar" );
+      `
+      );
+
+      const output = await playground.run({
+        scriptPath: '/wordpress/run-composer.php',
+      });
+
+      console.log( output.text );
+
+      const stderr = await playground?.readFileAsText(
+        '/tmp/stderr'
+      );
+
+      console.log( stderr );
+      
+    }
+  });
   const iframeRef = useRef(null);
   // 从 query 中获取插件地址
   const params = new URLSearchParams(window.location.search);
@@ -130,7 +181,8 @@ const App = () => {
       const client = await startPlaygroundWeb({
         iframe: iframeRef.current,
         remoteUrl: 'https://playground.wordpress.net/remote.html',
-        blueprint
+        blueprint,
+        // sapiName: 'cli'
       });
       await client.isReady();
       client.onNavigation(path => {
@@ -180,12 +232,26 @@ const App = () => {
 
   async function test() {
 
-    // console.log('test');
+  console.log('test');
     // const response = await playground.listFiles("/wordpress/wp-content/plugins/absolute-reviews-s1KZjfh8-1716526237");
     // console.log("response", response); 
+  // const response = await playground.run( {
+  //   code: `<?php 
+  //   echo "hello world";
+  //   $installer = ""
+  //   eval('?>' . $installer);
+  //   echo "end";
+  //   `
+  // } )    
+
+  // // copy('https://getcomposer.org/installer', '/wordpress/composer-setup.php');
+  // // $installer = file_get_contents('/wordpress/composer-setup.php');
+  // // eval('?>' . $installer);
+
+  // console.log( response.text );
 
     // 可以通过
-    await reload();
+    // await reload();
   }
 
   async function reload(url = null) {
@@ -378,7 +444,7 @@ const App = () => {
         <div className="line-1 bg-black h-full flex flex-col">
           <div className="toolbar p-2">
             <ControlGroup >
-              {/* <Button onClick={()=>test()}>test</Button> */}
+              <Button onClick={()=>openFilePicker()}>test</Button>
               <HTMLSelect className="w-[200px]" onChange={async e => {
                 setCurrentPlugin(e.target.value)
                 // if (e.target.value !== '-new-') {

@@ -1,0 +1,92 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PluginEditorByBudCoder 1.0\n"
+"Language: en_US\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.4.2\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-Language: English\n"
+
+msgid "Plugin Editor"
+msgstr ""
+
+msgid "BudCoder"
+msgstr ""
+
+msgid "Select Plugin"
+msgstr ""
+
+msgid "New Plugin"
+msgstr ""
+
+msgid "Request"
+msgstr ""
+
+msgid "Submit Ticket"
+msgstr ""
+
+msgid "All Tickets"
+msgstr ""
+
+msgid "Plugin"
+msgstr ""
+
+msgid "Created Time"
+msgstr ""
+
+msgid "File Link"
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Ticket does not exist"
+msgstr ""
+
+msgid "Failed to delete file"
+msgstr ""
+
+msgid "File does not exist"
+msgstr ""
+
+msgid "lang"
+msgstr "English"
+
+msgid "Prevent default form submission behavior"
+msgstr ""
+
+msgid "Ticket created"
+msgstr ""
+
+msgid "Ticket creation failed"
+msgstr ""
+
+msgid "Access file"
+msgstr ""
+
+msgid "Delete file"
+msgstr ""
+
+msgid "Jump"
+msgstr "Create&Debug"
+
+msgid "Delete"
+msgstr ""
+
+msgid "Are you sure you want to delete this ticket?"
+msgstr ""
+
+msgid "Ticket deleted"
+msgstr ""
+
+msgid "Failed to delete ticket"
+msgstr ""
+
+msgid "Are you sure you want to delete this file?"
+msgstr ""
+
+msgid "File deleted"
+msgstr ""

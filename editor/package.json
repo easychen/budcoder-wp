@@ -27,6 +27,7 @@
     "rehype-react": "^8.0.0",
     "remark-gfm": "^4.0.0",
     "remark-html": "^16.0.1",
+    "use-file-picker": "^2.1.2",
     "use-local-storage-state": "^19.2.0"
   },
   "devDependencies": {

@@ -1,0 +1,94 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PluginEditorByBudCoder 1.0\n"
+"Language: zh_CN\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.4.2\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-Language: Chinese\n"
+
+msgid "Plugin Editor"
+msgstr "插件编辑器"
+
+msgid "BudCoder"
+msgstr ""
+
+msgid "Select Plugin"
+msgstr "选择插件"
+
+msgid "New Plugin"
+msgstr "新插件"
+
+msgid "Request"
+msgstr "请求"
+
+msgid "Submit Ticket"
+msgstr "提交工单"
+
+msgid "All Tickets"
+msgstr "所有工单"
+
+msgid "Plugin"
+msgstr "插件"
+
+msgid "Created Time"
+msgstr "创建时间"
+
+msgid "File Link"
+msgstr "文件链接"
+
+msgid "Actions"
+msgstr "操作"
+
+msgid "Ticket does not exist"
+msgstr "工单不存在"
+
+msgid "Failed to delete file"
+msgstr "删除文件失败"
+
+msgid "File does not exist"
+msgstr "文件不存在"
+
+msgid "lang"
+msgstr "中文"
+
+msgid "Prevent default form submission behavior"
+msgstr "阻止表单默认提交行为"
+
+msgid "Ticket created"
+msgstr "工单已创建"
+
+msgid "Ticket creation failed"
+msgstr "工单创建失败"
+
+msgid "Access file"
+msgstr "访问文件"
+
+msgid "Delete file"
+msgstr "删除文件"
+
+msgid "Jump"
+msgstr "生成·调试"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Are you sure you want to delete this ticket?"
+msgstr "确定要删除这个工单吗？"
+
+msgid "Ticket deleted"
+msgstr "工单已删除"
+
+msgid "Failed to delete ticket"
+msgstr "删除工单失败"
+
+msgid "Are you sure you want to delete this file?"
+msgstr "确定要删除这个文件吗？"
+
+msgid "File deleted"
+msgstr "文件已删除"
+
+
